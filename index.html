@@ -342,7 +342,7 @@
           <h3>${app.name}</h3>
           <p>${app.description || ''}</p>
           ${buttonHtml}
-          <div class="meta">Version ${version}</div>
+          <div class="meta">Version ${version} &bull; ⬇ ${app.downloads || 0} Downloads</div>
         `;
         grid.appendChild(card);
       });
