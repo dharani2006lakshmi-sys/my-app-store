@@ -170,6 +170,62 @@
     cursor: pointer;
     font-size: 13px;
   }
+
+  .report-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(255, 50, 50, 0.2);
+    color: #ff6b6b;
+    border: 1px solid rgba(255, 50, 50, 0.3);
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .report-btn:hover {
+    background: rgba(255, 50, 50, 0.4);
+    color: #fff;
+  }
+  .card {
+    position: relative; /* needed for absolute report-btn */
+  }
+  
+  /* Report Modal */
+  .report-form {
+    text-align: left;
+    margin-top: 15px;
+  }
+  .report-form label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #ddd;
+  }
+  .report-form textarea {
+    width: 100%;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #fff;
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 10px;
+    resize: none;
+    height: 60px;
+  }
+  .submit-report-btn {
+    width: 100%;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 15px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  .submit-report-btn:hover { background: #c0392b; }
 </style>
 </head>
 <body>
@@ -180,6 +236,27 @@
   </div>
 
   <div id="content">Loading...</div>
+
+  
+  <!-- Report Modal -->
+  <div class="modal-overlay" id="reportModalOverlay">
+    <div class="modal" id="reportModalBox">
+      <h2 style="color: #ff6b6b; margin-bottom: 5px;">Report App</h2>
+      <p id="reportAppName" style="font-size: 14px; color: #b8b8d1; margin-bottom: 20px;"></p>
+      
+      <div class="report-form">
+        <label><input type="radio" name="reportReason" value="Cant Download" checked> Can't Download</label>
+        <label><input type="radio" name="reportReason" value="Not Working"> Not Working / Crashing</label>
+        <label><input type="radio" name="reportReason" value="Patched"> App is Patched / Outdated</label>
+        <label><input type="radio" name="reportReason" value="Other"> Other</label>
+        
+        <textarea id="reportComments" placeholder="Additional comments (optional)..."></textarea>
+        
+        <button class="submit-report-btn" onclick="submitReport()">Submit Report</button>
+        <button class="close-btn" style="width: 100%; margin-top: 10px;" onclick="closeReportModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Modal -->
   <div class="modal-overlay" id="modalOverlay">
@@ -260,6 +337,7 @@
         const fallbackUrl = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(app.name) + '&background=random&size=110';
         
         card.innerHTML = `
+          <button class="report-btn" onclick='openReportModal("${app.id}", "${app.name.replace(/'/g, "\'")}")' title="Report Issue">🚩</button>
           <img src="${app.icon_url || fallbackUrl}" class="icon" alt="${app.name}" onerror="this.src='${fallbackUrl}'">
           <h3>${app.name}</h3>
           <p>${app.description || ''}</p>
@@ -290,6 +368,57 @@
     `;
     document.getElementById("modalOverlay").classList.add("active");
   }
+
+  
+  let currentReportAppId = null;
+
+  function openReportModal(appId, appName) {
+    currentReportAppId = appId;
+    document.getElementById("reportAppName").innerText = "Reporting: " + appName;
+    document.getElementById("reportComments").value = "";
+    document.getElementById("reportModalOverlay").classList.add("active");
+  }
+
+  function closeReportModal() {
+    document.getElementById("reportModalOverlay").classList.remove("active");
+    currentReportAppId = null;
+  }
+
+  async function submitReport() {
+    if (!currentReportAppId) return;
+    
+    const reason = document.querySelector('input[name="reportReason"]:checked').value;
+    const comments = document.getElementById("reportComments").value;
+    
+    const btn = document.querySelector(".submit-report-btn");
+    btn.innerText = "Submitting...";
+    btn.disabled = true;
+
+    try {
+      const res = await fetch(`${API_BASE}/api/reports`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ app_id: currentReportAppId, reason, comments })
+      });
+      
+      if (res.ok) {
+        alert("Report submitted successfully! The admin will review it.");
+        closeReportModal();
+      } else {
+        alert("Failed to submit report. Please try again.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error submitting report.");
+    }
+    
+    btn.innerText = "Submit Report";
+    btn.disabled = false;
+  }
+  
+  window.openReportModal = openReportModal;
+  window.closeReportModal = closeReportModal;
+  window.submitReport = submitReport;
 
   function closeModal() {
     document.getElementById("modalOverlay").classList.remove("active");
