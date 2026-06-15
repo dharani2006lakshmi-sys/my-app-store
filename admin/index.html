@@ -56,6 +56,14 @@
   .link-item input { margin-bottom: 0; }
   .hidden { display: none; }
   #loginBox { max-width: 360px; margin: 80px auto; }
+
+  .report-row {
+    background: #1e1b3a;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border-left: 4px solid #ff6b6b;
+  }
 </style>
 </head>
 <body>
@@ -118,6 +126,13 @@
     </div>
   </div>
 
+  
+  <!-- Reports List -->
+  <div class="box">
+    <h2 style="color: #ff6b6b;">User Reports 🚩</h2>
+    <div id="reportList">Loading...</div>
+  </div>
+
   <!-- App List -->
   <div class="box">
     <h2>All Apps</h2>
@@ -167,6 +182,7 @@
   async function init() {
     await loadCategories();
     await loadApps();
+    await loadReports();
   }
 
   // ---------- CATEGORIES ----------
@@ -304,6 +320,7 @@
 
     resetForm();
     await loadApps();
+    await loadReports();
   }
 
   async function deleteApp(id) {
@@ -314,6 +331,36 @@
       headers: { Authorization: `Bearer ${token}` },
     });
     await loadApps();
+    await loadReports();
+  }
+
+  
+  // ---------- REPORTS ----------
+  async function loadReports() {
+    const res = await fetch(`${API_BASE}/api/reports`);
+    const reports = await res.json();
+
+    const list = document.getElementById("reportList");
+    if (reports.length === 0) {
+      list.innerHTML = "<p>No active reports! 🎉</p>";
+      return;
+    }
+
+    list.innerHTML = reports.map(r => `
+      <div class="report-row">
+        <h3>App: ${r.apps ? r.apps.name : 'Unknown'}</h3>
+        <p><strong>Reason:</strong> ${r.reason}</p>
+        <p><strong>Comments:</strong> ${r.comments || 'None'}</p>
+        <p style="font-size: 12px; color: #888;">Date: ${new Date(r.created_at).toLocaleString()}</p>
+        <button class="danger" style="margin-top: 10px;" onclick="deleteReport('${r.id}')">Dismiss Report</button>
+      </div>
+    `).join('');
+  }
+
+  async function deleteReport(id) {
+    if (!confirm("Dismiss this report?")) return;
+    await fetch(`${API_BASE}/api/reports/${id}`, { method: "DELETE" });
+    await loadReports();
   }
 
   // Check if already logged in
