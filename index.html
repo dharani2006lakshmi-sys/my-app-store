@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>App Store</title>
+<title>Mod APK Store</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -13,11 +13,36 @@
     padding: 30px 20px;
     color: #fff;
   }
-  h1.page-title {
+  .header-container {
     text-align: center;
-    margin-bottom: 30px;
-    font-size: 28px;
+    margin-bottom: 40px;
   }
+  h1.page-title {
+    font-size: 32px;
+    margin-bottom: 20px;
+    text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+  }
+  .search-bar {
+    width: 100%;
+    max-width: 400px;
+    padding: 14px 20px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 16px;
+    backdrop-filter: blur(10px);
+    outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  .search-bar::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+  }
+  .search-bar:focus {
+    border-color: #9b59b6;
+    box-shadow: 0 0 15px rgba(155, 89, 182, 0.5);
+  }
+  
   .category {
     max-width: 1000px;
     margin: 0 auto 40px;
@@ -91,8 +116,14 @@
     color: #888;
     font-size: 12px;
   }
+  .no-results {
+    text-align: center;
+    color: #b8b8d1;
+    font-size: 18px;
+    margin-top: 40px;
+  }
 
-  /* Modal for multi-link apps */
+  /* Modal */
   .modal-overlay {
     display: none;
     position: fixed;
@@ -129,7 +160,11 @@
 </head>
 <body>
 
-  <h1 class="page-title">📱 App Store</h1>
+  <div class="header-container">
+    <h1 class="page-title">📱 Mod APK Store</h1>
+    <input type="text" id="searchInput" class="search-bar" placeholder="Search for apps, mods, or games..." oninput="handleSearch()">
+  </div>
+
   <div id="content">Loading...</div>
 
   <!-- Modal -->
@@ -139,21 +174,46 @@
 
 <script>
   const API_BASE = "https://app-store-backend-6wkg.onrender.com";
+  let allCategories = [];
 
   async function loadApps() {
     try {
       const res = await fetch(`${API_BASE}/api/apps`);
-      const categories = await res.json();
-      render(categories);
+      allCategories = await res.json();
+      render(allCategories);
     } catch (err) {
       document.getElementById("content").innerText = "Failed to load apps.";
       console.error(err);
     }
   }
 
-  function render(categories) {
+  function handleSearch() {
+    const query = document.getElementById("searchInput").value.toLowerCase().trim();
+    if (!query) {
+      render(allCategories);
+      return;
+    }
+
+    const filteredCategories = allCategories.map(cat => {
+      if (!cat.apps) return { ...cat, apps: [] };
+      const matchingApps = cat.apps.filter(app => 
+        app.name.toLowerCase().includes(query) || 
+        (app.description && app.description.toLowerCase().includes(query))
+      );
+      return { ...cat, apps: matchingApps };
+    }).filter(cat => cat.apps.length > 0);
+
+    render(filteredCategories, query);
+  }
+
+  function render(categories, query = "") {
     const container = document.getElementById("content");
     container.innerHTML = "";
+
+    if (categories.length === 0) {
+      container.innerHTML = `<div class="no-results">No apps found matching "${query}"</div>`;
+      return;
+    }
 
     categories.forEach((cat) => {
       if (!cat.apps || cat.apps.length === 0) return;
@@ -183,8 +243,10 @@
           buttonHtml = `<button class="download-btn" onclick='openAppModal(${JSON.stringify(app).replace(/'/g, "&#39;")})'>⬇ Download Options</button>`;
         }
 
+        const fallbackUrl = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(app.name) + '&background=random&size=110';
+        
         card.innerHTML = `
-          <img src="${app.icon_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(app.name) + '&background=random&size=110'}" class="icon" alt="${app.name}" onerror="this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent(app.name) + '&background=random&size=110'">
+          <img src="${app.icon_url || fallbackUrl}" class="icon" alt="${app.name}" onerror="this.src='${fallbackUrl}'">
           <h3>${app.name}</h3>
           <p>${app.description || ''}</p>
           ${buttonHtml}
@@ -201,8 +263,10 @@
   function openAppModal(app) {
     const links = app.links || [];
     const modalBox = document.getElementById("modalBox");
+    const fallbackUrl = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(app.name) + '&background=random&size=110';
+    
     modalBox.innerHTML = `
-      <img src="${app.icon_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(app.name) + '&background=random&size=110'}" class="icon" alt="${app.name}" onerror="this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent(app.name) + '&background=random&size=110'">
+      <img src="${app.icon_url || fallbackUrl}" class="icon" alt="${app.name}" style="width:60px;height:60px;margin-bottom:10px" onerror="this.src='${fallbackUrl}'">
       <h2>${app.name}</h2>
       <p class="desc">${app.description || ''}</p>
       ${links.map(l => `
@@ -217,7 +281,6 @@
     document.getElementById("modalOverlay").classList.remove("active");
   }
 
-  // Define it on window so the inline onclick can find it
   window.openAppModal = openAppModal;
   window.closeModal = closeModal;
 
