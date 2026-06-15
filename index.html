@@ -17,6 +17,20 @@
     text-align: center;
     margin-bottom: 40px;
   }
+  
+  .header-logo {
+    width: 48px;
+    height: 48px;
+    vertical-align: middle;
+    margin-right: 12px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  }
+  h1.page-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
   h1.page-title {
     font-size: 32px;
     margin-bottom: 20px;
@@ -161,7 +175,7 @@
 <body>
 
   <div class="header-container">
-    <h1 class="page-title">📱 Mod APK Store</h1>
+    <h1 class="page-title"><img src="logo.png" class="header-logo" alt="Logo"> Mod APK Store</h1>
     <input type="text" id="searchInput" class="search-bar" placeholder="Search for apps, mods, or games..." oninput="handleSearch()">
   </div>
 
