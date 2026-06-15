@@ -132,7 +132,7 @@
   const SUPABASE_ANON_KEY = "sb_publishable_0tNjNwWx9Kl_CAu6-lRNLw_uPYG5pDq";
   const API_BASE = "https://app-store-backend-6wkg.onrender.com";
 
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   let session = null;
   let categories = [];
@@ -142,7 +142,7 @@
     const email = document.getElementById("loginEmail").value;
     const password = document.getElementById("loginPassword").value;
 
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
     if (error) {
       document.getElementById("loginError").innerText = error.message;
       return;
@@ -154,12 +154,12 @@
   }
 
   function logout() {
-    supabase.auth.signOut();
+    supabaseClient.auth.signOut();
     location.reload();
   }
 
   async function getToken() {
-    const { data } = await supabase.auth.getSession();
+    const { data } = await supabaseClient.auth.getSession();
     return data.session?.access_token;
   }
 
@@ -317,7 +317,7 @@
   }
 
   // Check if already logged in
-  supabase.auth.getSession().then(({ data }) => {
+  supabaseClient.auth.getSession().then(({ data }) => {
     if (data.session) {
       session = data.session;
       document.getElementById("loginBox").classList.add("hidden");
