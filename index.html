@@ -184,7 +184,7 @@
         }
 
         card.innerHTML = `
-          <img src="${app.icon_url || ''}" class="icon" alt="${app.name}">
+          <img src="${app.icon_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(app.name) + '&background=random&size=110'}" class="icon" alt="${app.name}" onerror="this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent(app.name) + '&background=random&size=110'">
           <h3>${app.name}</h3>
           <p>${app.description || ''}</p>
           ${buttonHtml}
@@ -202,7 +202,7 @@
     const links = app.links || [];
     const modalBox = document.getElementById("modalBox");
     modalBox.innerHTML = `
-      <img src="${app.icon_url || ''}" class="icon" alt="${app.name}">
+      <img src="${app.icon_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(app.name) + '&background=random&size=110'}" class="icon" alt="${app.name}" onerror="this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent(app.name) + '&background=random&size=110'">
       <h2>${app.name}</h2>
       <p class="desc">${app.description || ''}</p>
       ${links.map(l => `
