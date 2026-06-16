@@ -226,14 +226,121 @@
     font-weight: bold;
   }
   .submit-report-btn:hover { background: #c0392b; }
+
+  /* Phase 1 CSS: Light Mode, Badges, Carousel */
+  body.light-mode {
+    background: linear-gradient(135deg, #e0eafc, #cfdef3);
+    color: #333;
+  }
+  body.light-mode .card {
+    background: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+  }
+  body.light-mode h1.page-title, body.light-mode .card h3 {
+    color: #222;
+    text-shadow: none;
+  }
+  body.light-mode .card p {
+    color: #555;
+  }
+  body.light-mode .search-bar {
+    background: rgba(255, 255, 255, 0.5);
+    color: #222;
+    border-color: #aaa;
+  }
+  body.light-mode .search-bar::placeholder { color: #666; }
+  body.light-mode .modal {
+    background: #fdfdfd;
+    color: #222;
+    border-color: #ccc;
+  }
+  body.light-mode .modal p.desc { color: #555; }
+  body.light-mode .close-btn { color: #444; border-color: #aaa; }
+  
+  .theme-toggle {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  body.light-mode .theme-toggle {
+    background: rgba(0,0,0,0.1);
+    border-color: rgba(0,0,0,0.2);
+    color: #333;
+  }
+  
+  .badge {
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 12px;
+    text-transform: uppercase;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    z-index: 10;
+  }
+  .badge-new {
+    background: linear-gradient(135deg, #00f2fe, #4facfe);
+    color: #fff;
+  }
+  .badge-update {
+    background: linear-gradient(135deg, #f6d365, #fda085);
+    color: #fff;
+  }
+  
+  .carousel-container {
+    max-width: 1000px;
+    margin: 0 auto 40px;
+    overflow-x: auto;
+    display: flex;
+    gap: 20px;
+    padding: 10px 5px;
+    scrollbar-width: none;
+  }
+  .carousel-container::-webkit-scrollbar { display: none; }
+  .carousel-card {
+    min-width: 300px;
+    background: linear-gradient(135deg, rgba(155, 89, 182, 0.2), rgba(106, 90, 205, 0.2));
+    border: 1px solid #9b59b6;
+    border-radius: 20px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .carousel-card:hover { transform: translateY(-5px); }
+  .carousel-card img { width: 70px; height: 70px; border-radius: 16px; object-fit: cover; }
+  .carousel-info h3 { margin-bottom: 5px; font-size: 18px; }
+  .carousel-info p { font-size: 13px; color: #b8b8d1; margin-bottom: 0; }
+  body.light-mode .carousel-card .carousel-info p { color: #555; }
+  body.light-mode .carousel-card { background: rgba(155, 89, 182, 0.1); }
+
 </style>
 </head>
 <body>
 
+
+  <button id="themeToggle" class="theme-toggle" onclick="toggleTheme()">☀️ Light Mode</button>
   <div class="header-container">
     <h1 class="page-title"><img src="logo.png" class="header-logo" alt="Logo"> Mod APK Store</h1>
     <input type="text" id="searchInput" class="search-bar" placeholder="Search for apps, mods, or games..." oninput="handleSearch()">
   </div>
+
+  <div id="carouselArea" style="display:none;">
+    <h2 style="max-width: 1000px; margin: 0 auto 15px; font-size: 20px; padding-left: 10px; border-left: 4px solid #f1c40f;">🔥 Trending Apps</h2>
+    <div class="carousel-container" id="featuredCarousel"></div>
+  </div>
+
 
   <div id="content">Loading...</div>
 
@@ -272,9 +379,69 @@
       const res = await fetch(`${API_BASE}/api/apps`);
       allCategories = await res.json();
       render(allCategories);
+      const allAppsFlat = allCategories.flatMap(c => c.apps || []);
+      renderFeatured(allAppsFlat);
     } catch (err) {
       document.getElementById("content").innerText = "Failed to load apps.";
       console.error(err);
+    }
+  }
+
+  
+  function toggleTheme() {
+    const isLight = document.body.classList.toggle('light-mode');
+    document.getElementById('themeToggle').innerText = isLight ? '🌙 Dark Mode' : '☀️ Light Mode';
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+  }
+
+  // Load theme on startup
+  if (localStorage.getItem('theme') === 'light') {
+    document.body.classList.add('light-mode');
+    document.getElementById('themeToggle').innerText = '🌙 Dark Mode';
+  }
+  
+  function isRecent(dateString) {
+    if (!dateString) return false;
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now - date);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+    return diffDays <= 7;
+  }
+  
+  function renderFeatured(allAppsFlat) {
+    const carouselArea = document.getElementById("carouselArea");
+    const carousel = document.getElementById("featuredCarousel");
+    carousel.innerHTML = "";
+    
+    // Sort apps by highest downloads
+    const sorted = [...allAppsFlat].sort((a, b) => (b.downloads || 0) - (a.downloads || 0));
+    const topApps = sorted.slice(0, 5); // top 5
+    
+    if (topApps.length > 0) {
+      carouselArea.style.display = "block";
+      topApps.forEach(app => {
+        const fallbackUrl = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(app.name) + '&background=random&size=110';
+        const card = document.createElement("div");
+        card.className = "carousel-card";
+        card.onclick = () => {
+          if (app.links && app.links.length === 1) {
+            window.location.href = `${API_BASE}/download/${app.links[0].id}`;
+          } else {
+            openAppModal(app);
+          }
+        };
+        card.innerHTML = `
+          <img src="${app.icon_url || fallbackUrl}" onerror="this.src='${fallbackUrl}'">
+          <div class="carousel-info">
+            <h3>${app.name}</h3>
+            <p>⬇ ${app.downloads || 0} Downloads</p>
+          </div>
+        `;
+        carousel.appendChild(card);
+      });
+    } else {
+      carouselArea.style.display = "none";
     }
   }
 
@@ -282,6 +449,8 @@
     const query = document.getElementById("searchInput").value.toLowerCase().trim();
     if (!query) {
       render(allCategories);
+      const allAppsFlat = allCategories.flatMap(c => c.apps || []);
+      renderFeatured(allAppsFlat);
       return;
     }
 
@@ -336,7 +505,16 @@
 
         const fallbackUrl = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(app.name) + '&background=random&size=110';
         
+        
+        let badgeHtml = '';
+        if (isRecent(app.created_at)) {
+          badgeHtml = '<span class="badge badge-new">NEW</span>';
+        } else if (isRecent(app.updated_at)) {
+          badgeHtml = '<span class="badge badge-update">UPDATED</span>';
+        }
+
         card.innerHTML = `
+          ${badgeHtml}
           <button class="report-btn" onclick='openReportModal("${app.id}", "${app.name.replace(/'/g, "\'")}")' title="Report Issue">🚩</button>
           <img src="${app.icon_url || fallbackUrl}" class="icon" alt="${app.name}" onerror="this.src='${fallbackUrl}'">
           <h3>${app.name}</h3>
