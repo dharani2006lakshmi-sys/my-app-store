@@ -127,6 +127,13 @@
   </div>
 
   
+  
+  <!-- App Requests Dashboard -->
+  <div class="box">
+    <h2 style="color: #f1c40f;">💡 User App Requests</h2>
+    <div id="requestList">Loading...</div>
+  </div>
+
   <!-- Reports List -->
   <div class="box">
     <h2 style="color: #ff6b6b;">User Reports 🚩</h2>
@@ -183,6 +190,7 @@
     await loadCategories();
     await loadApps();
     await loadReports();
+    await loadRequests();
   }
 
   // ---------- CATEGORIES ----------
@@ -321,6 +329,7 @@
     resetForm();
     await loadApps();
     await loadReports();
+    await loadRequests();
   }
 
   async function deleteApp(id) {
@@ -332,9 +341,40 @@
     });
     await loadApps();
     await loadReports();
+    await loadRequests();
   }
 
   
+  
+  // ---------- APP REQUESTS ----------
+  async function loadRequests() {
+    const res = await fetch(`${API_BASE}/api/admin/requests`, {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    const requests = await res.json();
+    const list = document.getElementById("requestList");
+    if (requests.length === 0) {
+      list.innerHTML = "<p>No pending app requests. ✅</p>";
+      return;
+    }
+    list.innerHTML = requests.map(r => `
+      <div class="report-row" style="border-left-color: #f1c40f;">
+        <h3>Requested App: ${r.app_name}</h3>
+        <p><strong>Reason/Details:</strong> ${r.reason || 'None provided'}</p>
+        <p style="font-size: 12px; color: #888;">Date: ${new Date(r.created_at).toLocaleString()}</p>
+        <button class="danger" style="margin-top: 10px;" onclick="deleteRequest('${r.id}')">Dismiss Request</button>
+      </div>
+    `).join('');
+  }
+  async function deleteRequest(id) {
+    if (!confirm("Dismiss this app request?")) return;
+    await fetch(`${API_BASE}/api/admin/requests/${id}`, {
+      method: "DELETE",
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    await loadRequests();
+  }
+
   // ---------- REPORTS ----------
   async function loadReports() {
     const res = await fetch(`${API_BASE}/api/reports`);
@@ -361,6 +401,7 @@
     if (!confirm("Dismiss this report?")) return;
     await fetch(`${API_BASE}/api/reports/${id}`, { method: "DELETE" });
     await loadReports();
+    await loadRequests();
   }
 
   // Check if already logged in
