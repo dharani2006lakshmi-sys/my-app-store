@@ -676,6 +676,108 @@
   window.closeModal = closeModal;
 
   loadApps();
+
+  // --- Phase 2: Community Logic ---
+  let selectedRating = 0;
+  let currentReviewAppId = null;
+
+  function openRequestModal() {
+    document.getElementById("requestModal").style.display = "flex";
+  }
+  function closeRequestModal() {
+    document.getElementById("requestModal").style.display = "none";
+  }
+  async function submitAppRequest() {
+    const app_name = document.getElementById("reqAppName").value;
+    const reason = document.getElementById("reqAppReason").value;
+    if(!app_name) return alert("Please enter an app name!");
+    
+    await fetch(`${API_BASE}/api/requests`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ app_name, reason })
+    });
+    alert("Request submitted! Our team will look into it.");
+    closeRequestModal();
+  }
+
+  function openReviewModal(appId, appName) {
+    currentReviewAppId = appId;
+    document.getElementById("reviewAppTitle").innerText = `Review ${appName}`;
+    setRating(0);
+    document.getElementById("reviewComment").value = "";
+    document.getElementById("reviewModal").style.display = "flex";
+  }
+  function closeReviewModal() {
+    document.getElementById("reviewModal").style.display = "none";
+  }
+  function setRating(rating) {
+    selectedRating = rating;
+    const spans = document.getElementById("starSelect").getElementsByTagName("span");
+    for(let i=0; i<5; i++){
+      if(i < rating) spans[i].className = "active";
+      else spans[i].className = "";
+    }
+  }
+  async function submitReview() {
+    if(selectedRating === 0) return alert("Please select a star rating!");
+    const comment = document.getElementById("reviewComment").value;
+    
+    await fetch(`${API_BASE}/api/reviews`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ app_id: currentReviewAppId, rating: selectedRating, comment })
+    });
+    alert("Review posted successfully!");
+    closeReviewModal();
+    // Refresh modal to show new review
+    const modalTitle = document.getElementById("modalTitle").innerText;
+    const app = allCategories.flatMap(c => c.apps).find(a => a.name === modalTitle);
+    if(app) openAppModal(app);
+  }
+
+  // Update openAppModal to show Version History & Reviews
+  async function loadAppDetails(app) {
+    const detailsContainer = document.getElementById("modalLinks"); // hijacking modalLinks area slightly
+    
+    // 1. Fetch Reviews
+    let reviewsHtml = '<div style="margin-top: 20px;"><h3>⭐ User Reviews</h3>';
+    try {
+      const res = await fetch(`${API_BASE}/api/reviews/${app.id}`);
+      const reviews = await res.json();
+      if(reviews.length > 0) {
+        reviewsHtml += reviews.map(r => `
+          <div class="review-box">
+            <div class="star-rating">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</div>
+            <p style="font-size: 14px; margin: 5px 0;">${r.comment || ''}</p>
+            <p style="font-size: 11px; color: #888;">${new Date(r.created_at).toLocaleDateString()}</p>
+          </div>
+        `).join('');
+      } else {
+        reviewsHtml += `<p style="font-size: 14px; color: #aaa;">No reviews yet. Be the first!</p>`;
+      }
+    } catch(e) { console.error(e); }
+    reviewsHtml += `<button class="btn" onclick='openReviewModal("${app.id}", "${app.name.replace(/'/g, "\'")}")' style="background:#f1c40f; color:#000; margin-top:10px;">Write a Review</button></div>`;
+
+    // 2. Version History HTML
+    let historyHtml = '<div class="version-history"><h4>📜 Version History & Changelog</h4>';
+    if (app.links && app.links.length > 0) {
+      historyHtml += app.links.map(l => `
+        <div class="version-item">
+          <p><strong>${l.label || 'Version ' + app.version}</strong></p>
+          <p style="color: #bbb;">${l.changelog || 'No changelog provided'}</p>
+          <button class="btn" style="padding: 5px 10px; font-size: 12px; margin-top: 5px;" onclick="window.location.href='${API_BASE}/download/${l.id}'">Download this version</button>
+        </div>
+      `).join('');
+    } else {
+      historyHtml += `<p>No versions available.</p>`;
+    }
+    historyHtml += '</div>';
+
+    // Insert everything into the modal
+    document.getElementById("modalLinks").innerHTML = historyHtml + reviewsHtml;
+  }
+
 </script>
 
 
