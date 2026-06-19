@@ -600,6 +600,22 @@
     });
   }
 
+  
+  async function shareApp(appName) {
+    const text = `Hey! Download ${appName} from my App Store!`;
+    const url = window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: appName, text: text, url: url });
+      } catch (err) {
+        console.log("Share failed:", err);
+      }
+    } else {
+      navigator.clipboard.writeText(text + " " + url);
+      alert("Link copied to clipboard!");
+    }
+  }
+
   function openAppModal(app) {
     const links = app.links || [];
     const modalBox = document.getElementById("modalBox");
@@ -612,7 +628,10 @@
       ${links.map(l => `
         <a class="download-btn" style="margin-bottom: 10px;" href="${API_BASE}/download/${l.id}">⬇ ${l.label}</a>
       `).join('')}
-      <button class="close-btn" onclick="closeModal()">Close</button>
+      <div style="display:flex; justify-content:center; gap:10px;">
+        <button class="close-btn" onclick="closeModal()">Close</button>
+        <button class="close-btn" onclick="shareApp('${app.name.replace(/'/g, "\'")}')" style="background: rgba(46, 204, 113, 0.2); color: #2ecc71; border-color: rgba(46, 204, 113, 0.3);">🔗 Share</button>
+      </div>
     `;
     document.getElementById("modalOverlay").classList.add("active");
   }
