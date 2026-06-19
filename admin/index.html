@@ -286,6 +286,7 @@
         <p>${app.description || ''}</p>
         <p>Links: ${(app.app_links || []).map(l => l.label).join(', ') || 'none'}</p>
         <button class="secondary" onclick='editApp(${JSON.stringify(app).replace(/'/g, "&apos;")})'>Edit</button>
+        ${!app.is_published ? `<button onclick="quickPublish('${app.id}')" style="background:#27ae60;">🚀 Publish</button>` : `<button onclick="quickUnpublish('${app.id}')" style="background:#e67e22;">Hide</button>`}
         <button class="danger" onclick="deleteApp('${app.id}')">Delete</button>
       </div>
     `).join('');
