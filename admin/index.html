@@ -299,7 +299,8 @@
     });
     document.getElementById("newCategoryName").value = "";
     await loadCategories();
-    return await res.json(); // returns created category
+    const result = await res.json();
+    return result.length ? result[0] : result; // returns created category
   }
 
   async function deleteCategory(id) {
