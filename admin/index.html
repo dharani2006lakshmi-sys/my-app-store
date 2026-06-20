@@ -236,6 +236,7 @@
   let session = null;
   let categories = [];
   let allApps = []; // store globally for quick access
+  let undoStack = {}; // stores old states for undo feature
 
   // ---------- UI ROUTING ----------
   function switchTab(tabId) {
@@ -331,7 +332,9 @@
           </div>
         </div>
         <div class="app-actions">
-          <button class="magic" onclick="autoFillSingleApp('${app.id}')">✨ Auto-Fill</button>
+          ${undoStack[app.id] ? 
+            `<button class="danger" onclick="undoAutoFill('${app.id}')">↩️ Undo</button>` : 
+            `<button class="magic" onclick="autoFillSingleApp('${app.id}')">✨ Auto-Fill</button>`}
           <button class="secondary" onclick='editApp(${JSON.stringify(app).replace(/'/g, "&apos;")})'>✏️ Edit</button>
           ${!app.is_published ? 
             `<button class="success" onclick="quickPublish('${app.id}')">🚀 Publish</button>` : 
@@ -484,6 +487,9 @@
     const app = allApps.find(a => a.id === id);
     if (!app) return;
     
+    // Save current state for undo feature BEFORE making changes
+    undoStack[id] = JSON.parse(JSON.stringify(app));
+    
     const btn = event.currentTarget;
     const originalText = btn.innerHTML;
     btn.innerHTML = "⏳ Wait..."; btn.disabled = true;
@@ -526,6 +532,46 @@
     } catch(err) {
       alert("Auto-Fill Failed: " + err.message);
       btn.innerHTML = originalText; btn.disabled = false;
+    }
+  }
+
+
+  // Undo an Auto-Fill action
+  async function undoAutoFill(id) {
+    const oldApp = undoStack[id];
+    if (!oldApp) return;
+    
+    const btn = event.currentTarget;
+    btn.innerHTML = "⏳ Restoring..."; btn.disabled = true;
+
+    try {
+      const updatedLinks = (oldApp.app_links || []).map(l => ({ 
+          label: l.label, 
+          telegram_file_id: l.telegram_file_id, 
+          file_name: l.file_name 
+      }));
+
+      const payload = {
+        name: oldApp.name,
+        description: oldApp.description,
+        icon_url: oldApp.icon_url,
+        version: oldApp.version,
+        category_id: oldApp.category_id,
+        is_published: oldApp.is_published,
+        links: updatedLinks
+      };
+
+      const token = await getToken();
+      await fetch(`${API_BASE}/api/admin/apps/${id}`, {
+        method: "PUT", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload)
+      });
+      
+      delete undoStack[id]; // Clear undo history after successful restore
+      await loadApps(); // refresh list
+    } catch(err) {
+      alert("Undo Failed: " + err.message);
+      btn.innerHTML = "↩️ Undo"; btn.disabled = false;
     }
   }
 
