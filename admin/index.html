@@ -3,148 +3,225 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Panel</title>
+<title>Premium Admin Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
-  body { background: #14121f; color: #fff; min-height: 100vh; padding: 20px; }
-  .container { max-width: 800px; margin: 0 auto; }
-  h1 { margin-bottom: 20px; }
-  .box {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 14px;
-    padding: 20px;
-    margin-bottom: 20px;
+  :root {
+    --bg: #0f172a;
+    --sidebar: #1e293b;
+    --card: #1e293b;
+    --text: #f8fafc;
+    --text-muted: #94a3b8;
+    --primary: #6366f1;
+    --primary-hover: #4f46e5;
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --border: #334155;
   }
-  input, select, textarea {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 10px;
-    border-radius: 8px;
-    border: 1px solid rgba(255,255,255,0.2);
-    background: #1e1b3a;
-    color: #fff;
-    font-size: 14px;
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+  body { background: var(--bg); color: var(--text); display: flex; min-height: 100vh; overflow-x: hidden; }
+  
+  /* LOGIN PAGE */
+  #loginBox {
+    max-width: 400px; margin: 120px auto; background: var(--card); padding: 40px; border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4); border: 1px solid var(--border); width: 100%;
   }
-  label { font-size: 13px; color: #b8b8d1; display: block; margin-bottom: 4px; }
-  button {
-    background: linear-gradient(135deg, #6a5acd, #9b59b6);
-    color: #fff;
-    border: none;
-    padding: 10px 18px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 14px;
-    margin-right: 8px;
-    margin-bottom: 8px;
-  }
-  button.secondary { background: #444; }
-  button.danger { background: #b33; }
-  .app-row {
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-    padding: 12px 0;
-  }
-  .app-row h3 { font-size: 15px; }
-  .app-row p { font-size: 12px; color: #b8b8d1; margin: 4px 0; }
-  .link-item {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    margin-bottom: 6px;
-  }
-  .link-item input { margin-bottom: 0; }
-  .hidden { display: none; }
-  #loginBox { max-width: 360px; margin: 80px auto; }
+  #loginBox h2 { margin-bottom: 24px; font-weight: 600; text-align: center; font-size: 24px; }
 
-  .report-row {
-    background: #1e1b3a;
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 15px;
-    border-left: 4px solid #ff6b6b;
+  /* SIDEBAR */
+  .sidebar {
+    width: 260px; background: var(--sidebar); border-right: 1px solid var(--border);
+    padding: 24px; display: flex; flex-direction: column; gap: 10px; position: fixed; height: 100vh;
   }
+  .sidebar h2 { font-size: 20px; font-weight: 700; color: var(--primary); margin-bottom: 30px; letter-spacing: -0.5px; }
+  .nav-btn {
+    background: transparent; color: var(--text-muted); border: none; padding: 12px 16px; border-radius: 10px;
+    text-align: left; font-size: 15px; font-weight: 500; cursor: pointer; transition: 0.2s;
+  }
+  .nav-btn:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+  .nav-btn.active { background: var(--primary); color: #fff; }
+  .nav-spacer { flex: 1; }
+  
+  /* MAIN CONTENT */
+  .main-content {
+    flex: 1; margin-left: 260px; padding: 40px; max-width: 1200px;
+  }
+  .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+  .header h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.5px; }
+  
+  .section { display: none; animation: fadeIn 0.3s; }
+  .section.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 24px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  }
+  
+  /* FORMS */
+  input, select, textarea {
+    width: 100%; padding: 12px 16px; margin-bottom: 16px; border-radius: 10px;
+    border: 1px solid var(--border); background: rgba(0,0,0,0.2); color: var(--text);
+    font-size: 14px; outline: none; transition: border 0.2s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--primary); }
+  label { font-size: 13px; color: var(--text-muted); display: block; margin-bottom: 6px; font-weight: 500; }
+  
+  /* BUTTONS */
+  button {
+    background: var(--primary); color: #fff; border: none; padding: 10px 18px; border-radius: 8px;
+    cursor: pointer; font-weight: 600; font-size: 14px; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px;
+  }
+  button:hover { background: var(--primary-hover); transform: translateY(-1px); }
+  button:active { transform: translateY(0); }
+  button.secondary { background: #334155; color: var(--text); }
+  button.secondary:hover { background: #475569; }
+  button.danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.2); }
+  button.danger:hover { background: var(--danger); color: #fff; }
+  button.success { background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.2); }
+  button.success:hover { background: var(--success); color: #fff; }
+  button.magic { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; }
+  button.magic:hover { filter: brightness(1.1); }
+  
+  /* LISTS */
+  .list-row {
+    display: flex; justify-content: space-between; align-items: center; padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .list-row:last-child { border-bottom: none; }
+  
+  /* APP CARDS (Table Alternative) */
+  .app-item {
+    display: flex; gap: 16px; padding: 20px; border: 1px solid var(--border); border-radius: 12px;
+    background: rgba(255,255,255,0.02); margin-bottom: 16px; align-items: center; transition: 0.2s;
+  }
+  .app-item:hover { border-color: var(--primary); background: rgba(99, 102, 241, 0.05); }
+  .app-icon { width: 60px; height: 60px; border-radius: 12px; object-fit: cover; background: var(--border); }
+  .app-info { flex: 1; }
+  .app-info h3 { font-size: 16px; font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+  .app-info p { font-size: 13px; color: var(--text-muted); margin-bottom: 6px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .app-badges { display: flex; gap: 6px; }
+  .badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; background: var(--border); color: var(--text-muted); }
+  .badge.pub { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+  .badge.hid { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+  .app-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+  
+  .hidden { display: none !important; }
 </style>
 </head>
 <body>
 
-<div id="loginBox" class="box">
+<div id="loginBox">
   <h2>Admin Login</h2>
   <label>Email</label>
-  <input type="email" id="loginEmail" placeholder="you@example.com">
+  <input type="email" id="loginEmail" placeholder="admin@store.com">
   <label>Password</label>
   <input type="password" id="loginPassword" placeholder="••••••••">
-  <button onclick="login()">Login</button>
-  <p id="loginError" style="color:#f55; font-size:13px;"></p>
+  <button onclick="login()" style="width: 100%; justify-content: center; margin-top: 8px;">Login to Dashboard</button>
+  <p id="loginError" style="color:var(--danger); font-size:13px; margin-top: 12px; text-align: center;"></p>
 </div>
 
-<div id="adminPanel" class="container hidden">
-  <h1>⚙️ Admin Panel</h1>
-  <button class="secondary" onclick="logout()">Logout</button>
-
-  <!-- Categories -->
-  <div class="box">
-    <h2>Categories</h2>
-    <div id="categoryList"></div>
-    <label>New category name</label>
-    <input id="newCategoryName" placeholder="e.g. Movies">
-    <button onclick="addCategory()">Add Category</button>
+<div id="adminPanel" class="hidden" style="width: 100%; display: flex;">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <h2>🚀 App Store</h2>
+    <button class="nav-btn active" onclick="switchTab('apps')">📱 Apps Manager</button>
+    <button class="nav-btn" onclick="switchTab('categories')">📁 Categories</button>
+    <button class="nav-btn" onclick="switchTab('reports')">🚩 Reports & Requests</button>
+    <div class="nav-spacer"></div>
+    <button class="nav-btn" onclick="logout()">🚪 Logout</button>
   </div>
 
-  <!-- Add / Edit App -->
-  <div class="box">
-    <h2 id="formTitle">Add New App</h2>
-    <input type="hidden" id="appId">
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+    
+    <!-- APPS TAB -->
+    <div id="tab-apps" class="section active">
+      <div class="header">
+        <h1>Apps Manager</h1>
+        <button onclick="resetForm()">+ Add New App</button>
+      </div>
 
-    <label>App Name</label>
-    <input id="appName" placeholder="e.g. YouTube" style="margin-bottom: 6px;">
-    <button type="button" onclick="autoFillPlayStore()" style="background:#f39c12; color:#fff; font-size: 13px; padding: 6px 12px; margin-bottom: 12px; display:block;">✨ Auto-Fill from Play Store</button>
+      <!-- EDIT/ADD FORM -->
+      <div id="appFormBox" class="card hidden">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 24px;">
+          <h2 id="formTitle" style="font-size: 18px;">Add New App</h2>
+          <button class="secondary" onclick="closeForm()">✕ Close</button>
+        </div>
+        <input type="hidden" id="appId">
 
-    <label>Description</label>
-    <textarea id="appDescription" rows="2" placeholder="Short description"></textarea>
+        <label>App Name</label>
+        <div style="display: flex; gap: 10px;">
+          <input id="appName" placeholder="e.g. YouTube" style="margin-bottom:0;">
+          <button type="button" class="magic" onclick="autoFillPlayStoreForm()">✨ Auto-Fill</button>
+        </div>
+        <p style="font-size: 11px; color: var(--text-muted); margin: 6px 0 16px;">Click Auto-Fill to grab official Icon, Description, Category and Version from Google Play!</p>
 
-    <label>Icon URL</label>
-    <input id="appIcon" placeholder="https://...">
+        <label>Description</label>
+        <textarea id="appDescription" rows="3" placeholder="App description goes here..."></textarea>
 
-    <label>Category</label>
-    <select id="appCategory"></select>
+        <div style="display: flex; gap: 16px;">
+          <div style="flex: 1;">
+            <label>Icon URL</label>
+            <input id="appIcon" placeholder="https://...">
+          </div>
+          <div style="flex: 1;">
+            <label>Version</label>
+            <input id="appVersion" placeholder="e.g. 1.0">
+          </div>
+        </div>
 
-    <label>Version</label>
-    <input id="appVersion" placeholder="e.g. 1.0">
+        <label>Category</label>
+        <select id="appCategory"></select>
 
-    <label>
-      <input type="checkbox" id="appPublished" style="width:auto; display:inline; margin-right:6px;" checked>
-      Published (visible on site)
-    </label>
+        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin-top: 10px;">
+          <input type="checkbox" id="appPublished" style="width:16px; height:16px; margin:0;" checked>
+          Published (Visible to users)
+        </label>
 
-    <h3 style="margin: 14px 0 8px;">Download Links</h3>
-    <div id="linksContainer"></div>
-    <button class="secondary" onclick="addLinkField()">+ Add Link</button>
+        <h3 style="margin: 24px 0 12px; font-size: 15px; border-top: 1px solid var(--border); padding-top: 24px;">Download Links</h3>
+        <div id="linksContainer"></div>
+        <button class="secondary" onclick="addLinkField()" style="margin-bottom: 24px;">+ Add Link</button>
 
-    <div style="margin-top: 14px;">
-      <button onclick="saveApp()">Save App</button>
-      <button class="secondary" onclick="resetForm()">Clear</button>
+        <div style="display: flex; gap: 12px;">
+          <button onclick="saveApp()" style="flex: 1; justify-content: center; padding: 14px;">Save App</button>
+        </div>
+      </div>
+
+      <!-- APPS LIST -->
+      <div id="appList">Loading apps...</div>
     </div>
-  </div>
 
-  
-  
-  <!-- App Requests Dashboard -->
-  <div class="box">
-    <h2 style="color: #f1c40f;">💡 User App Requests</h2>
-    <div id="requestList">Loading...</div>
-  </div>
+    <!-- CATEGORIES TAB -->
+    <div id="tab-categories" class="section">
+      <div class="header">
+        <h1>Categories</h1>
+      </div>
+      <div class="card">
+        <div style="display: flex; gap: 10px; margin-bottom: 24px;">
+          <input id="newCategoryName" placeholder="New Category Name (e.g. Movies)" style="margin:0;">
+          <button onclick="addCategory()">Add Category</button>
+        </div>
+        <div id="categoryList"></div>
+      </div>
+    </div>
 
-  <!-- Reports List -->
-  <div class="box">
-    <h2 style="color: #ff6b6b;">User Reports 🚩</h2>
-    <div id="reportList">Loading...</div>
-  </div>
+    <!-- REPORTS TAB -->
+    <div id="tab-reports" class="section">
+      <div class="header">
+        <h1>Reports & Requests</h1>
+      </div>
+      <div class="card">
+        <h2 style="font-size: 16px; margin-bottom: 16px; color: var(--warning);">💡 User App Requests</h2>
+        <div id="requestList">Loading...</div>
+      </div>
+      <div class="card">
+        <h2 style="font-size: 16px; margin-bottom: 16px; color: var(--danger);">🚩 User Reports</h2>
+        <div id="reportList">Loading...</div>
+      </div>
+    </div>
 
-  <!-- App List -->
-  <div class="box">
-    <h2>All Apps</h2>
-    <div id="appList">Loading...</div>
   </div>
 </div>
 
@@ -156,35 +233,33 @@
   const API_BASE = "https://app-store-backend-6wkg.onrender.com";
 
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
   let session = null;
   let categories = [];
+  let allApps = []; // store globally for quick access
+
+  // ---------- UI ROUTING ----------
+  function switchTab(tabId) {
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById('tab-' + tabId).classList.add('active');
+  }
 
   // ---------- AUTH ----------
   async function login() {
     const email = document.getElementById("loginEmail").value;
     const password = document.getElementById("loginPassword").value;
-
     const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-    if (error) {
-      document.getElementById("loginError").innerText = error.message;
-      return;
-    }
+    if (error) { document.getElementById("loginError").innerText = error.message; return; }
     session = data.session;
     document.getElementById("loginBox").classList.add("hidden");
     document.getElementById("adminPanel").classList.remove("hidden");
+    document.getElementById("adminPanel").style.display = "flex";
     init();
   }
 
-  function logout() {
-    supabaseClient.auth.signOut();
-    location.reload();
-  }
-
-  async function getToken() {
-    const { data } = await supabaseClient.auth.getSession();
-    return data.session?.access_token;
-  }
+  function logout() { supabaseClient.auth.signOut(); location.reload(); }
+  async function getToken() { const { data } = await supabaseClient.auth.getSession(); return data.session?.access_token; }
 
   // ---------- INIT ----------
   async function init() {
@@ -197,103 +272,90 @@
   // ---------- CATEGORIES ----------
   async function loadCategories() {
     const token = await getToken();
-    const res = await fetch(`${API_BASE}/api/admin/categories`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const res = await fetch(`${API_BASE}/api/admin/categories`, { headers: { Authorization: `Bearer ${token}` } });
     categories = await res.json();
 
     const list = document.getElementById("categoryList");
     list.innerHTML = categories.map(c => `
-      <div class="link-item">
-        <span style="flex:1">${c.name}</span>
+      <div class="list-row">
+        <span style="font-weight: 500;">${c.name}</span>
         <button class="danger" onclick="deleteCategory('${c.id}')">Delete</button>
       </div>
     `).join('');
 
     const select = document.getElementById("appCategory");
-    select.innerHTML = categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    select.innerHTML = '<option value="">Select Category...</option>' + categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
   }
 
-  async function addCategory() {
-    const name = document.getElementById("newCategoryName").value.trim();
-    if (!name) return;
+  async function addCategory(nameStr = null) {
+    const name = nameStr || document.getElementById("newCategoryName").value.trim();
+    if (!name) return null;
     const token = await getToken();
-    await fetch(`${API_BASE}/api/admin/categories`, {
+    const res = await fetch(`${API_BASE}/api/admin/categories`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({ name, sort_order: categories.length }),
     });
     document.getElementById("newCategoryName").value = "";
     await loadCategories();
+    return await res.json(); // returns created category
   }
 
   async function deleteCategory(id) {
-    if (!confirm("Delete this category? Apps in it will become uncategorized.")) return;
+    if (!confirm("Delete this category? Apps inside will become uncategorized.")) return;
     const token = await getToken();
-    await fetch(`${API_BASE}/api/admin/categories/${id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    await fetch(`${API_BASE}/api/admin/categories/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
     await loadCategories();
   }
 
-  // ---------- LINKS (dynamic fields) ----------
-  function addLinkField(label = "", telegram_file_id = "", file_name = "") {
-    const container = document.getElementById("linksContainer");
-    const row = document.createElement("div");
-    row.className = "link-item";
-    row.innerHTML = `
-      <input placeholder="Label (e.g. YouTube)" class="link-label" value="${label}">
-      <input placeholder="Telegram file_id" class="link-fileid" value="${telegram_file_id}">
-      <input placeholder="File name (e.g. youtube.apk)" class="link-filename" value="${file_name}">
-      <button class="danger" onclick="this.parentElement.remove()">✕</button>
-    `;
-    container.appendChild(row);
+  // ---------- APPS ----------
+  async function loadApps() {
+    const token = await getToken();
+    const res = await fetch(`${API_BASE}/api/admin/apps`, { headers: { Authorization: `Bearer ${token}` } });
+    allApps = await res.json();
+
+    const list = document.getElementById("appList");
+    list.innerHTML = allApps.map(app => {
+      const fallbackUrl = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(app.name) + '&background=random&size=110';
+      const catName = categories.find(c => c.id === app.category_id)?.name || 'Uncategorized';
+      return `
+      <div class="app-item">
+        <img src="${app.icon_url || fallbackUrl}" class="app-icon" onerror="this.src='${fallbackUrl}'">
+        <div class="app-info">
+          <h3>${app.name} <span class="badge ${app.is_published ? 'pub' : 'hid'}">${app.is_published ? 'Published' : 'Hidden'}</span></h3>
+          <p>${app.description || 'No description yet.'}</p>
+          <div class="app-badges">
+            <span class="badge">📂 ${catName}</span>
+            <span class="badge">v${app.version || '1.0'}</span>
+            <span class="badge">🔗 ${(app.app_links || []).length} Links</span>
+          </div>
+        </div>
+        <div class="app-actions">
+          <button class="magic" onclick="autoFillSingleApp('${app.id}')">✨ Auto-Fill</button>
+          <button class="secondary" onclick='editApp(${JSON.stringify(app).replace(/'/g, "&apos;")})'>✏️ Edit</button>
+          ${!app.is_published ? 
+            `<button class="success" onclick="quickPublish('${app.id}')">🚀 Publish</button>` : 
+            `<button class="secondary" onclick="quickUnpublish('${app.id}')">Hide</button>`}
+          <button class="danger" onclick="deleteApp('${app.id}')">🗑️</button>
+        </div>
+      </div>
+    `}).join('');
   }
 
-  // ---------- APPS ----------
-  
   async function quickPublish(id) {
     const token = await getToken();
-    await fetch(`${API_BASE}/api/admin/apps/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ is_published: true })
-    });
+    await fetch(`${API_BASE}/api/admin/apps/${id}`, { method: "PUT", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ is_published: true }) });
     await loadApps();
   }
 
   async function quickUnpublish(id) {
     const token = await getToken();
-    await fetch(`${API_BASE}/api/admin/apps/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ is_published: false })
-    });
+    await fetch(`${API_BASE}/api/admin/apps/${id}`, { method: "PUT", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ is_published: false }) });
     await loadApps();
   }
 
-  async function loadApps() {
-    const token = await getToken();
-    const res = await fetch(`${API_BASE}/api/admin/apps`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const apps = await res.json();
-
-    const list = document.getElementById("appList");
-    list.innerHTML = apps.map(app => `
-      <div class="app-row">
-        <h3>${app.name} ${app.is_published ? '' : '<span style="color:#f90">(hidden)</span>'}</h3>
-        <p>${app.description || ''}</p>
-        <p>Links: ${(app.app_links || []).map(l => l.label).join(', ') || 'none'}</p>
-        <button class="secondary" onclick='editApp(${JSON.stringify(app).replace(/'/g, "&apos;")})'>Edit</button>
-        ${!app.is_published ? `<button onclick="quickPublish('${app.id}')" style="background:#27ae60;">🚀 Publish</button>` : `<button onclick="quickUnpublish('${app.id}')" style="background:#e67e22;">Hide</button>`}
-        <button class="danger" onclick="deleteApp('${app.id}')">Delete</button>
-      </div>
-    `).join('');
-  }
-
   function editApp(app) {
+    document.getElementById("appFormBox").classList.remove("hidden");
     document.getElementById("formTitle").innerText = "Edit App";
     document.getElementById("appId").value = app.id;
     document.getElementById("appName").value = app.name || "";
@@ -305,71 +367,49 @@
 
     document.getElementById("linksContainer").innerHTML = "";
     (app.app_links || []).forEach(l => addLinkField(l.label, l.telegram_file_id, l.file_name));
-
-    window.scrollTo(0, 0);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function resetForm() {
+    document.getElementById("appFormBox").classList.remove("hidden");
     document.getElementById("formTitle").innerText = "Add New App";
     document.getElementById("appId").value = "";
     document.getElementById("appName").value = "";
     document.getElementById("appDescription").value = "";
     document.getElementById("appIcon").value = "";
     document.getElementById("appVersion").value = "";
+    document.getElementById("appCategory").value = "";
     document.getElementById("appPublished").checked = true;
     document.getElementById("linksContainer").innerHTML = "";
   }
+  function closeForm() { document.getElementById("appFormBox").classList.add("hidden"); }
 
-  
-  async function autoFillPlayStore() {
-    const appName = document.getElementById("appName").value.trim();
-    if (!appName) return alert("Please enter an App Name first!");
-    
-    const btn = document.querySelector('button[onclick="autoFillPlayStore()"]');
-    const originalText = btn.innerText;
-    btn.innerText = "⏳ Searching Play Store...";
-    btn.disabled = true;
-
-    try {
-      const token = await getToken();
-      const res = await fetch(`${API_BASE}/api/admin/scrape`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ appName })
-      });
-      
-      if (!res.ok) throw new Error("App not found or error occurred");
-      
-      const data = await res.json();
-      
-      // Fill the fields!
-      if (data.name) document.getElementById("appName").value = data.name;
-      if (data.description) document.getElementById("appDescription").value = data.description;
-      if (data.icon_url) document.getElementById("appIcon").value = data.icon_url;
-      if (data.version) document.getElementById("appVersion").value = data.version;
-      
-    } catch(err) {
-      alert("Error: " + err.message);
-    } finally {
-      btn.innerText = originalText;
-      btn.disabled = false;
-    }
+  function addLinkField(label = "", telegram_file_id = "", file_name = "") {
+    const container = document.getElementById("linksContainer");
+    const row = document.createElement("div");
+    row.style.display = "flex"; row.style.gap = "10px"; row.style.marginBottom = "10px";
+    row.innerHTML = `
+      <input placeholder="Label (e.g. Minecraft)" class="link-label" value="${label}" style="flex:1; margin:0;">
+      <input placeholder="Telegram file_id" class="link-fileid" value="${telegram_file_id}" style="flex:2; margin:0;">
+      <input placeholder="File name" class="link-filename" value="${file_name}" style="flex:1; margin:0;" readonly>
+      <button class="danger" onclick="this.parentElement.remove()" style="margin:0;">✕</button>
+    `;
+    container.appendChild(row);
   }
 
   async function saveApp() {
     const id = document.getElementById("appId").value;
-
-    const links = Array.from(document.querySelectorAll("#linksContainer .link-item")).map(row => ({
+    const links = Array.from(document.querySelectorAll("#linksContainer > div")).map(row => ({
       label: row.querySelector(".link-label").value,
       telegram_file_id: row.querySelector(".link-fileid").value,
       file_name: row.querySelector(".link-filename").value,
-    })).filter(l => l.label && l.telegram_file_id);
+    })).filter(l => l.telegram_file_id);
 
     const payload = {
       name: document.getElementById("appName").value,
       description: document.getElementById("appDescription").value,
       icon_url: document.getElementById("appIcon").value,
-      category_id: document.getElementById("appCategory").value,
+      category_id: document.getElementById("appCategory").value || null,
       version: document.getElementById("appVersion").value,
       is_published: document.getElementById("appPublished").checked,
       links,
@@ -377,81 +417,155 @@
 
     const token = await getToken();
     const url = id ? `${API_BASE}/api/admin/apps/${id}` : `${API_BASE}/api/admin/apps`;
-    const method = id ? "PUT" : "POST";
+    await fetch(url, { method: id ? "PUT" : "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) });
 
-    await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify(payload),
-    });
-
-    resetForm();
+    closeForm();
     await loadApps();
-    await loadReports();
-    await loadRequests();
   }
 
   async function deleteApp(id) {
     if (!confirm("Delete this app?")) return;
     const token = await getToken();
-    await fetch(`${API_BASE}/api/admin/apps/${id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    await fetch(`${API_BASE}/api/admin/apps/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
     await loadApps();
-    await loadReports();
-    await loadRequests();
   }
 
-  
-  
-  // ---------- APP REQUESTS ----------
-  async function loadRequests() {
-    const res = await fetch(`${API_BASE}/api/admin/requests`, {
-      headers: { "Authorization": `Bearer ${token}` }
+  // ---------- AUTO FILL SUPER POWERS ----------
+  async function performAutoFillScrape(appName) {
+    const token = await getToken();
+    const res = await fetch(`${API_BASE}/api/admin/scrape`, {
+      method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ appName })
     });
+    if (!res.ok) throw new Error("App not found on Play Store");
+    return await res.json();
+  }
+
+  // Method 1: Auto-Fill the open Form
+  async function autoFillPlayStoreForm() {
+    let appName = document.getElementById("appName").value.trim();
+    if (!appName) return alert("Please enter an App Name first!");
+    
+    const btn = document.querySelector('button[onclick="autoFillPlayStoreForm()"]');
+    const originalText = btn.innerText; btn.innerText = "⏳ Scraping..."; btn.disabled = true;
+
+    try {
+      const data = await performAutoFillScrape(appName);
+      if (data.name) document.getElementById("appName").value = data.name;
+      if (data.description) document.getElementById("appDescription").value = data.description;
+      if (data.icon_url) document.getElementById("appIcon").value = data.icon_url;
+      if (data.version) document.getElementById("appVersion").value = data.version;
+      
+      // Handle Category & Links Labels
+      if (data.genre) {
+         let cat = categories.find(c => c.name.toLowerCase() === data.genre.toLowerCase());
+         if (!cat) {
+             cat = await addCategory(data.genre);
+         }
+         if (cat) document.getElementById("appCategory").value = cat.id;
+      }
+      
+      // Clean up link labels
+      document.querySelectorAll(".link-label").forEach(input => {
+         if (!input.value || input.value.includes("Version 1.0") || input.value.includes(".")) {
+             input.value = data.name; // Clean name
+         }
+      });
+      
+    } catch(err) {
+      alert("Error: " + err.message);
+    } finally {
+      btn.innerText = originalText; btn.disabled = false;
+    }
+  }
+
+  // Method 2: 1-Click Auto-Fill from main list
+  async function autoFillSingleApp(id) {
+    const app = allApps.find(a => a.id === id);
+    if (!app) return;
+    
+    const btn = event.currentTarget;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = "⏳ Wait..."; btn.disabled = true;
+
+    try {
+      const data = await performAutoFillScrape(app.name);
+      
+      let categoryId = app.category_id;
+      if (data.genre) {
+         let cat = categories.find(c => c.name.toLowerCase() === data.genre.toLowerCase());
+         if (!cat) cat = await addCategory(data.genre);
+         if (cat) categoryId = cat.id;
+      }
+      
+      // Clean link labels
+      let updatedLinks = (app.app_links || []).map(l => {
+          let cleanLabel = l.label;
+          if (!cleanLabel || cleanLabel.includes("Version 1.0") || cleanLabel.includes(".apk")) {
+              cleanLabel = data.name;
+          }
+          return { label: cleanLabel, telegram_file_id: l.telegram_file_id, file_name: l.file_name };
+      });
+
+      const payload = {
+        name: data.name || app.name,
+        description: data.description || app.description,
+        icon_url: data.icon_url || app.icon_url,
+        version: data.version || app.version,
+        category_id: categoryId,
+        is_published: true, // auto publish if it's fixed
+        links: updatedLinks
+      };
+
+      const token = await getToken();
+      await fetch(`${API_BASE}/api/admin/apps/${id}`, {
+        method: "PUT", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload)
+      });
+      await loadApps(); // refresh list
+    } catch(err) {
+      alert("Auto-Fill Failed: " + err.message);
+      btn.innerHTML = originalText; btn.disabled = false;
+    }
+  }
+
+  // ---------- REPORTS & REQUESTS ----------
+  async function loadRequests() {
+    const token = await getToken();
+    const res = await fetch(`${API_BASE}/api/admin/requests`, { headers: { "Authorization": `Bearer ${token}` } });
     const requests = await res.json();
     const list = document.getElementById("requestList");
-    if (requests.length === 0) {
-      list.innerHTML = "<p>No pending app requests. ✅</p>";
-      return;
-    }
+    if (requests.length === 0) { list.innerHTML = "<p style='color:var(--text-muted); font-size:14px;'>No pending app requests. ✅</p>"; return; }
     list.innerHTML = requests.map(r => `
-      <div class="report-row" style="border-left-color: #f1c40f;">
-        <h3>Requested App: ${r.app_name}</h3>
-        <p><strong>Reason/Details:</strong> ${r.reason || 'None provided'}</p>
-        <p style="font-size: 12px; color: #888;">Date: ${new Date(r.created_at).toLocaleString()}</p>
-        <button class="danger" style="margin-top: 10px;" onclick="deleteRequest('${r.id}')">Dismiss Request</button>
+      <div class="list-row" style="border-left: 3px solid var(--warning); padding-left: 12px;">
+        <div>
+          <h3 style="font-size:15px;">${r.app_name}</h3>
+          <p style="font-size:13px; color:var(--text-muted);">${r.reason || 'No details'}</p>
+        </div>
+        <button class="secondary" onclick="deleteRequest('${r.id}')">Dismiss</button>
       </div>
     `).join('');
   }
+
   async function deleteRequest(id) {
     if (!confirm("Dismiss this app request?")) return;
-    await fetch(`${API_BASE}/api/admin/requests/${id}`, {
-      method: "DELETE",
-      headers: { "Authorization": `Bearer ${token}` }
-    });
+    const token = await getToken();
+    await fetch(`${API_BASE}/api/admin/requests/${id}`, { method: "DELETE", headers: { "Authorization": `Bearer ${token}` } });
     await loadRequests();
   }
 
-  // ---------- REPORTS ----------
   async function loadReports() {
     const res = await fetch(`${API_BASE}/api/reports`);
     const reports = await res.json();
-
     const list = document.getElementById("reportList");
-    if (reports.length === 0) {
-      list.innerHTML = "<p>No active reports! 🎉</p>";
-      return;
-    }
-
+    if (reports.length === 0) { list.innerHTML = "<p style='color:var(--text-muted); font-size:14px;'>No active reports! 🎉</p>"; return; }
     list.innerHTML = reports.map(r => `
-      <div class="report-row">
-        <h3>App: ${r.apps ? r.apps.name : 'Unknown'}</h3>
-        <p><strong>Reason:</strong> ${r.reason}</p>
-        <p><strong>Comments:</strong> ${r.comments || 'None'}</p>
-        <p style="font-size: 12px; color: #888;">Date: ${new Date(r.created_at).toLocaleString()}</p>
-        <button class="danger" style="margin-top: 10px;" onclick="deleteReport('${r.id}')">Dismiss Report</button>
+      <div class="list-row" style="border-left: 3px solid var(--danger); padding-left: 12px;">
+        <div>
+          <h3 style="font-size:15px;">App: ${r.apps ? r.apps.name : 'Unknown'}</h3>
+          <p style="font-size:13px; color:var(--text-muted);"><strong>Reason:</strong> ${r.reason} | <strong>Comments:</strong> ${r.comments || 'None'}</p>
+        </div>
+        <button class="secondary" onclick="deleteReport('${r.id}')">Dismiss</button>
       </div>
     `).join('');
   }
@@ -460,19 +574,18 @@
     if (!confirm("Dismiss this report?")) return;
     await fetch(`${API_BASE}/api/reports/${id}`, { method: "DELETE" });
     await loadReports();
-    await loadRequests();
   }
 
-  // Check if already logged in
+  // Check login
   supabaseClient.auth.getSession().then(({ data }) => {
     if (data.session) {
       session = data.session;
       document.getElementById("loginBox").classList.add("hidden");
       document.getElementById("adminPanel").classList.remove("hidden");
+      document.getElementById("adminPanel").style.display = "flex";
       init();
     }
   });
 </script>
-
 </body>
 </html>
