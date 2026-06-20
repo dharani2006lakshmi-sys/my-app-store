@@ -97,7 +97,8 @@
     <input type="hidden" id="appId">
 
     <label>App Name</label>
-    <input id="appName" placeholder="e.g. YouTube">
+    <input id="appName" placeholder="e.g. YouTube" style="margin-bottom: 6px;">
+    <button type="button" onclick="autoFillPlayStore()" style="background:#f39c12; color:#fff; font-size: 13px; padding: 6px 12px; margin-bottom: 12px; display:block;">✨ Auto-Fill from Play Store</button>
 
     <label>Description</label>
     <textarea id="appDescription" rows="2" placeholder="Short description"></textarea>
@@ -317,6 +318,42 @@
     document.getElementById("appVersion").value = "";
     document.getElementById("appPublished").checked = true;
     document.getElementById("linksContainer").innerHTML = "";
+  }
+
+  
+  async function autoFillPlayStore() {
+    const appName = document.getElementById("appName").value.trim();
+    if (!appName) return alert("Please enter an App Name first!");
+    
+    const btn = document.querySelector('button[onclick="autoFillPlayStore()"]');
+    const originalText = btn.innerText;
+    btn.innerText = "⏳ Searching Play Store...";
+    btn.disabled = true;
+
+    try {
+      const token = await getToken();
+      const res = await fetch(`${API_BASE}/api/admin/scrape`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ appName })
+      });
+      
+      if (!res.ok) throw new Error("App not found or error occurred");
+      
+      const data = await res.json();
+      
+      // Fill the fields!
+      if (data.name) document.getElementById("appName").value = data.name;
+      if (data.description) document.getElementById("appDescription").value = data.description;
+      if (data.icon_url) document.getElementById("appIcon").value = data.icon_url;
+      if (data.version) document.getElementById("appVersion").value = data.version;
+      
+    } catch(err) {
+      alert("Error: " + err.message);
+    } finally {
+      btn.innerText = originalText;
+      btn.disabled = false;
+    }
   }
 
   async function saveApp() {
