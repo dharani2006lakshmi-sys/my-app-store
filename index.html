@@ -579,36 +579,22 @@
       cat.apps.forEach((app) => {
         const card = document.createElement("div");
         card.className = "card";
+        card.style.cursor = "pointer";
+        card.onclick = (e) => {
+            // Prevent triggering if they click a download button directly (though we removed them)
+            if(e.target.tagName !== 'BUTTON' && e.target.tagName !== 'A') {
+                openAppModal(app);
+            }
+        };
         
-        const links = app.links || [];
-        const isSingleLink = links.length === 1;
         const version = app.version || '1.0';
-
-        let buttonHtml = '';
-        if (isSingleLink) {
-          buttonHtml = `<a href="${API_BASE}/download/${links[0].id}" download class="download-btn">⬇ Download APK</a>`;
-        } else {
-          buttonHtml = `<button class="download-btn" onclick='openAppModal(${JSON.stringify(app).replace(/'/g, "&#39;")})'>⬇ Download Options</button>`;
-        }
-
         const fallbackUrl = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(app.name) + '&background=random&size=110';
         
-        
-        let badgeHtml = '';
-        if (isRecent(app.created_at)) {
-          badgeHtml = '<span class="badge badge-new">NEW</span>';
-        } else if (isRecent(app.updated_at)) {
-          badgeHtml = '<span class="badge badge-update">UPDATED</span>';
-        }
-
+        // Clean card: NO badges, NO extra buttons, NO download button. Just info.
         card.innerHTML = `
-          ${badgeHtml}
-          <button class="card-share-btn" onclick='shareApp("${app.name.replace(/'/g, "\'")}")' title="Share App">🔗</button>
-          <button class="report-btn" onclick='openReportModal("${app.id}", "${app.name.replace(/'/g, "\'")}")' title="Report Issue">🚩</button>
           <img src="${app.icon_url || fallbackUrl}" class="icon" alt="${app.name}" onerror="this.src='${fallbackUrl}'">
           <h3>${app.name}</h3>
           <p>${app.description || ''}</p>
-          ${buttonHtml}
           <div class="meta">Version ${version} &bull; ⬇ ${app.downloads || 0} Downloads</div>
         `;
         grid.appendChild(card);
@@ -647,9 +633,10 @@
       ${links.map(l => `
         <a class="download-btn" style="margin-bottom: 10px;" href="${API_BASE}/download/${l.id}">⬇ ${l.label}</a>
       `).join('')}
-      <div style="display:flex; justify-content:center; gap:10px;">
-        <button class="close-btn" onclick="closeModal()">Close</button>
+      <div style="display:flex; justify-content:center; gap:10px; flex-wrap: wrap;">
         <button class="close-btn" onclick="shareApp('${app.name.replace(/'/g, "\'")}')" style="background: rgba(46, 204, 113, 0.2); color: #2ecc71; border-color: rgba(46, 204, 113, 0.3);">🔗 Share</button>
+        <button class="close-btn" onclick="closeModal(); openReportModal('${app.id}', '${app.name.replace(/'/g, "\'")}')" style="background: rgba(255, 50, 50, 0.2); color: #ff6b6b; border-color: rgba(255, 50, 50, 0.3);">🚩 Report</button>
+        <button class="close-btn" onclick="closeModal()">Close</button>
       </div>
     `;
     document.getElementById("modalOverlay").classList.add("active");
